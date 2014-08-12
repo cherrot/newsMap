@@ -1,31 +1,111 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<!--Mobile device-->
-<!--meta name="viewport" content="initial-scale=1.0, user-scalable=no" />-->
-<title>QQ Map Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Map</title>
 <style>
 html,body {
-    height: 100%;
+	       height: 100%;
 }
-#container {
-    width:100%;
-    height:100%
-}
-</style>
-<script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&key=GOZBZ-B5EAV-TWCP7-UZZJK-Q5ABQ-CDBNL"></script>
-<script src="qqMap.js"></script>
+#container  { width: 100%;
+	          height: 100%;
+	        }
+</style> 
+<script type="text/javascript">var _speedMark = new Date();
+</script>
+<script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+<script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
 
 <script>
-function init() {
+var xhr = new XMLHttpRequest();
+var init = function() {
     var map = new qq.maps.Map(document.getElementById('container'));
     var myLatLng = new qq.maps.LatLng(39.916527,116.397128);
     map.panTo(myLatLng);
+    var listener = qq.maps.event.addListener(
+     map,
+    'click',
+    function(event) {
+        //xhr.onreadystatechange = function() {
+        //    if (xhr.readyState == 4 && (xhr.status >= 200 && xhr.status < 300 ||
+        //            xhr.status == 304)) {
+        //        var res = xhr.responseText;
+        //        var html = '<h2>附近评论</h2>';
+        //        for (item in res.data.commentlist) {
+        //            html += '<p>附近'+item.distance+'公里，<strong>'+item.userinfo.nick+
+        //            '</strong>评论了<em>'+res.data.targetlist["T"+item.userinfo.targetid]['title']+
+        //            '</em>: ' + item.content + '</p>';
+        //        }
+        //        var div = document.getElementById('comments');
+        //        div.innerHTML(html);
+        //    }
+        //}
+
+        //xhr.open('get', 'http://coral.qq.com/article/comment/nearby?lat='+event.latLng.getLat()+'&lng='+event.latLng.getLng(), true);
+        //xhr.send(null);
+        $.ajax({
+            url:'http://coral.qq.com/article/comment/nearby?lat='+event.latLng.getLat()+'&lng='+event.latLng.getLng(),
+            dataType:"jsonp",
+            success:function(res) {
+                var html = '<h2>附近评论</h2>';
+                var comments = res.data.commentlist; 
+                for (idx in comments) {
+                    var item = comments[idx];
+                    html += '<p>附近'+item.distance+'公里，<strong>'+item.userinfo.nick+
+                    '</strong>评论了<em>'+res.data.targetlist["T"+item.targetid]['title']+
+                    '</em>: ' + item.content + '</p>';
+                }
+                $('#comments').append(html);
+            }
+        });
+        //alert('您点击的位置为:[' + event.latLng.getLng() +
+            //',' + event.latLng.getLat() + ']');
+    }
+);
 }
+
+var callbacks={
+    //若服务请求成功，则运行以下函数，并将结果传入
+    complete:function(results){
+        map.setCenter(result.detail.location);
+        var marker = new qq.maps.Marker({
+            map:map,
+            position: result.detail.location
+        });
+    },
+    //若服务请求失败，则运行以下函数
+    error:function(){
+        alert("出错了。");
+    }
+}
+//创建类实例
+geocoder = new qq.maps.Geocoder(callbacks);
+//地址解析
+geocoder.getLocation("中国,北京,海淀区,海淀大街38号");
+ 
+//反地址解析(经纬度到地名转换过程)
+ 
+//创建对象实例
+geocoder = new qq.maps.Geocoder();
+ 
+//重新设置成功时的回调
+//geocoder.setComplete(function(result){
+//    alert('成功：'+result.detail.address);
+//})
+geocoder.setError(function(result){
+    alert('出错啦');
+})
+//创建坐标对象
+var coord=new qq.maps.LatLng(39.987816,116.328327);
+//通过经纬度得到其位置信息
+geocoder.getAddress(coord);
+
+
+
 </script>
 </head>
 <body onload="init()">
-<div id="container"></div>
+<div id="container" style="width:70%;height:100%"></div>
+<div id="comments" style="width:30%"></div>
 </body>
 </html>
