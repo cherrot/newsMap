@@ -124,7 +124,8 @@ function loadComment(point){
                     + articles[list[i]['targetid']]['title'] + '》</a><p><strong>' 
                     + list[i]['content'] + '</strong><br />'
                     //+ '<em>距离' + list[i]['distance']+'公里，@' + list[i]['userinfo']['nick'] + '</em></p>';
-                    + '<em>@' + list[i]['userinfo']['nick'] + '</em></p>';
+                    + '<em>@' + list[i]['userinfo']['nick'] + '</em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;距离'
+                    + list[i]['distance'] +'公里</p>';
                     
                     var point = new BMap.Point( list[i]['location']['lng'], list[i]['location']['lat']);
                     addMarker(point,content);
