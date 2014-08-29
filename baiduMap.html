@@ -38,7 +38,8 @@ map.enableScrollWheelZoom();                            //启用滚轮放大缩�
 //map.addControl(new BMap.MapTypeControl());          //添加地图类型控件
 map.disable3DBuilding();
 map.centerAndZoom(point, 14); 
-map.setMapStyle({style:'midnight'});
+//map.setMapStyle({style:'midnight'});
+map.setMapStyle({style:'light'});
 //点击获取坐标
 map.addEventListener("click",function(e){
     //alert(e.point.lng + "," + e.point.lat);
@@ -58,8 +59,8 @@ function addMarker(point,content){
 
 	var infoWindow = new BMap.InfoWindow(content);
 	marker.addEventListener("click", function(){
-		this.openInfoWindow(infoWindow );
-		//alert("hello world!");
+                this.openInfoWindow(infoWindow);
+                //alert("hello world!");
 	});
 }
 // 随机向地图添加25个标注
@@ -109,12 +110,20 @@ function loadComment(point){
         url:'http://coral.qq.com/article/comment/nearby?lat='+point.lat+'&lng='+point.lng,
         dataType:"jsonp", 
         success:function(res) { 
-            console.log(res);
+            //console.log(res);
             if(res.errCode == 0){
                 var list = res.data.commentlist;
-                for(var i = 0,len = list.length;i<len;i++){
-                    console.log(list[i]['location']);
-                    var content = list[i]['content'];
+                var articles = res.data.targetlist;
+                //for(var i = 0,len = list.length;i<len;i++){
+                for (i in list) {
+                    //console.log(list[i]['location']);
+                    var content = 
+                    '<a target="_blank" href="' + articles[list[i]['targetid']]['url'] +'">《'
+                    + articles[list[i]['targetid']]['title'] + '》</a><p><strong>' 
+                    + list[i]['content'] + '</strong><br />'
+                    //+ '<em>距离' + list[i]['distance']+'公里，@' + list[i]['userinfo']['nick'] + '</em></p>';
+                    + '<em>@' + list[i]['userinfo']['nick'] + '</em></p>';
+                    
                     var point = new BMap.Point( list[i]['location']['lng'], list[i]['location']['lat']);
                     addMarker(point,content);
                 }
