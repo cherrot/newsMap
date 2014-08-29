@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf8">
+<style type="text/css">
+ul,li{list-style: none;margin:0;padding: 0}
+
+html{height:100%}
+body{height:100%;margin:0px;padding:0px}
+
+#allmap{height:100%;width:100%;float:left;border-right:2px solid #bcbcbc;}
+
+fieldset{border: 1px solid;border-radius: 3px;}
+
+.optionpanel{margin: 10px;padding-top: 20px;}
+#r-result{height:100%;width:20%;float:left;}
+
+</style>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=EgHXGcxQ4gYQfvaWeXylEiK2"></script>
+<title>评论地图</title>
+</head>
+<body>
+<div id="allmap"></div> 
+</body>
+</html>
+<script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+<script type="text/javascript" src="http://developer.baidu.com/map/custom/stylelist.js"></script>
+<script type="text/javascript">
+var map = new BMap.Map("allmap");
+window.map = map;
+var point = new BMap.Point(116.348125, 39.991051);
+
+map.addControl(new BMap.NavigationControl());               // 添加平移缩放控件
+map.addControl(new BMap.ScaleControl());                    // 添加比例尺控件
+map.addControl(new BMap.OverviewMapControl());              //添加缩略地图控件
+map.enableScrollWheelZoom();                            //启用滚轮放大缩小
+//map.addControl(new BMap.MapTypeControl());          //添加地图类型控件
+map.disable3DBuilding();
+map.centerAndZoom(point, 14); 
+map.setMapStyle({style:'midnight'});
+//点击获取坐标
+map.addEventListener("click",function(e){
+    //alert(e.point.lng + "," + e.point.lat);
+});
+
+//拖拽获取中间点坐标
+map.addEventListener("dragend", function showInfo(){
+	var cp = map.getCenter();
+	//alert(cp.lng + "," + cp.lat);
+    loadComment(cp);
+});
+
+// 编写自定义函数,创建标注
+function addMarker(point,content){
+	var marker = new BMap.Marker(point);
+	map.addOverlay(marker);
+
+	var infoWindow = new BMap.InfoWindow(content);
+	marker.addEventListener("click", function(){
+		this.openInfoWindow(infoWindow );
+		//alert("hello world!");
+	});
+}
+// 随机向地图添加25个标注
+/*
+var bounds = map.getBounds();
+var sw = bounds.getSouthWest();
+var ne = bounds.getNorthEast();
+var lngSpan = Math.abs(sw.lng - ne.lng);
+var latSpan = Math.abs(ne.lat - sw.lat);
+for (var i = 0; i < 25; i ++) {
+	var point = new BMap.Point(sw.lng + lngSpan * (Math.random() * 0.7), ne.lat - latSpan * (Math.random() * 0.7));
+	addMarker(point,"");
+}
+
+
+var opts = {
+  position : point,    // 指定文本标注所在的地理位置
+  offset   : new BMap.Size(30, -30)    //设置文本偏移量
+ 
+}
+var label = new BMap.Label("欢迎使用百度地图，这是一个简单的文本标注哦~", opts);  // 创建文本标注对象
+	label.setStyle({
+		 color : "red",
+		 fontSize : "12px",
+		 height : "20px",
+		 lineHeight : "20px",
+		 fontFamily:"微软雅黑"
+	 });
+map.addOverlay(label); 
+
+
+var marker = new BMap.Marker(new BMap.Point(116.404, 39.915));  // 创建标注
+map.addOverlay(marker);              // 将标注添加到地图中
+
+var polyline = new BMap.Polyline([
+	new BMap.Point(116.399, 39.910),
+	new BMap.Point(116.405, 39.920),
+	new BMap.Point(116.425, 39.900)
+], {strokeColor:"blue", strokeWeight:6, strokeOpacity:0.5});
+map.addOverlay(polyline);          //增加折线
+
+var circle = new BMap.Circle(map.getCenter(),500);
+map.addOverlay(circle);     
+*/
+function loadComment(point){
+   $.ajax({ 
+        url:'http://coral.qq.com/article/comment/nearby?lat='+point.lat+'&lng='+point.lng,
+        dataType:"jsonp", 
+        success:function(res) { 
+            console.log(res);
+            if(res.errCode == 0){
+                var list = res.data.commentlist;
+                for(var i = 0,len = list.length;i<len;i++){
+                    console.log(list[i]['location']);
+                    var content = list[i]['content'];
+                    var point = new BMap.Point( list[i]['location']['lng'], list[i]['location']['lat']);
+                    addMarker(point,content);
+                }
+            }
+        }
+    });
+}
+loadComment(map.getCenter())
+/*
+
+
+// 百度地图API功能
+var map = new BMap.Map("allmap");
+map.centerAndZoom(new BMap.Point(116.404, 39.915), 14);
+var marker1 = new BMap.Marker(new BMap.Point(116.384, 39.925));  // 创建标注
+map.addOverlay(marker1);              // 将标注添加到地图中
+
+//创建信息窗口
+var infoWindow1 = new BMap.InfoWindow("普通标注");
+marker1.addEventListener("click", function(){this.openInfoWindow(infoWindow1);});
+
+
+//创建小狐狸
+var pt = new BMap.Point(116.417, 39.909);
+var myIcon = new BMap.Icon("fox.gif", new BMap.Size(300,157));
+var marker2 = new BMap.Marker(pt,{icon:myIcon});  // 创建标注
+map.addOverlay(marker2);              // 将标注添加到地图中
+
+//让小狐狸说话（创建信息窗口）
+var infoWindow2 = new BMap.InfoWindow("<p style='font-size:14px;'>哈哈，你看见我啦！我可不常出现哦！</p><p style='font-size:14px;'>赶快查看源代码，看看我是如何添加上来的！</p>");
+marker2.addEventListener("click", function(){this.openInfoWindow(infoWindow2);});
+
+////////////////////////////////////////////////////////////////////////////////
+
+// 百度地图API功能
+var map = new BMap.Map("allmap");
+var point = new BMap.Point(116.404, 39.915);
+map.centerAndZoom(point, 15);
+var marker = new BMap.Marker(point);  // 创建标注
+map.addOverlay(marker);              // 将标注添加到地图中
+marker.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+// 百度地图API功能
+var map = new BMap.Map("allmap");
+var point = new BMap.Point(116.404, 39.915);
+map.centerAndZoom(point, 15);
+// 编写自定义函数,创建标注
+function addMarker(point){
+  var marker = new BMap.Marker(point);
+  map.addOverlay(marker);
+}
+// 随机向地图添加25个标注
+var bounds = map.getBounds();
+var sw = bounds.getSouthWest();
+var ne = bounds.getNorthEast();
+var lngSpan = Math.abs(sw.lng - ne.lng);
+var latSpan = Math.abs(ne.lat - sw.lat);
+for (var i = 0; i < 25; i ++) {
+  var point = new BMap.Point(sw.lng + lngSpan * (Math.random() * 0.7), ne.lat - latSpan * (Math.random() * 0.7));
+  addMarker(point);
+}
+
+*/
+</script>
